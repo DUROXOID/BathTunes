@@ -1,0 +1,327 @@
+import pygame
+from pygame import mixer
+from random import randint, choice
+from time import sleep
+from math import sqrt
+pygame.init()
+mixer.init()
+screen = pygame.display.set_mode((600, 600))
+pygame.display.set_caption("BATH TUNES - VERSION 1.1")
+screen.fill((0, 200, 210))
+logo = pygame.image.load('/home/pi/Desktop/ASSETS/bathTunesLogo.png')
+boss = pygame.image.load('/home/pi/Desktop/ASSETS/bossBoat.png')
+soap = pygame.image.load('/home/pi/Desktop/ASSETS/soapBar.png')
+squirter = pygame.image.load('/home/pi/Desktop/ASSETS/squirtBoat.png')
+duckBubbles = pygame.image.load('/home/pi/Desktop/ASSETS/duckBubbles.png')
+bubble = pygame.image.load('/home/pi/Desktop/ASSETS/bubble.png')
+pinkBubble = pygame.image.load('/home/pi/Desktop/ASSETS/pinkBubble.png')
+sud = pygame.image.load('/home/pi/Desktop/ASSETS/sudCluster.png')
+enemy = pygame.image.load('/home/pi/Desktop/ASSETS/badBoat.png')
+leftWall = pygame.image.load('/home/pi/Desktop/ASSETS/leftBubbleWall.png')
+rightWall = pygame.image.load('/home/pi/Desktop/ASSETS/rightBubbleWall.png')
+border = pygame.image.load('/home/pi/Desktop/ASSETS/bubbleBorder.png')
+head = pygame.image.load('/home/pi/Desktop/ASSETS/duckHead.png')
+wings = pygame.image.load('/home/pi/Desktop/ASSETS/duckWings.png')
+body = pygame.image.load('/home/pi/Desktop/ASSETS/duckBody.png')
+font = pygame.font.Font('freesansbold.ttf', 100)
+screen.blit(leftWall, (0, 0))
+screen.blit(rightWall, (0, 0))
+screen.blit(border, (0, 0))
+screen.blit(logo, (0, 0))
+pygame.display.update()
+maxObj = 10
+xChange = 1
+yChange = 10
+objects = ["bubble", "bubble", "bubble", "bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "pinkBubble"]
+obj = []
+objX = []
+objY = []
+objSpeed = []
+bubbleX = []
+bubbleY = []
+soapX = randint(0, 600)
+soapY = randint(-2000, -1000)
+soapSpeed = 5
+sudX = []
+sudY = []
+jetX = []
+jetY = []
+yChange = 100
+xChange = 10
+for i in range(maxObj):
+    sudX.append(-200)
+    sudY.append(randint(-200, 600))
+    jetX.append(randint(0, 600))
+    jetY.append(randint(-400, 600))
+wallSpeed = 0
+wallCord = 0
+quack = 0
+score = 0
+level = 1
+quacking = False
+print('THIS IS A GAME WHERE YOU ROLEPLAY AS A DUCK THAT EITHER COLLECTS OR QUACKS AWAY OBJECTS USING VARIOUS STYLES OF INPUT SUCH AS MOUCE AND KEYBOARD. TRY TO DEFLECT AS FEW BUBBLES AS')
+print('POSSIBLE AS THEY WILL GRANT YOU POINTS IF THEY COLIDE WITH YOU. QUACK EVERYTHING ELSE AWAY OR JUST DODGE THOSE OBJECTS IF YOU CAN AS THEY ARE ENEMIES WHO WILL INSTEAD INSTANT KILL')
+print('YOU IF THEY DO LIKEWISE. AT LEVEL 3 A NEW ENEMY WILL BEGIN TO APPEAR - THE SQURTER. IT WILL FIRE UNBLOCKABLE JETS OF WATER AT YOUR POSITION SO BE SURE TO RAPIDLY NAVIGATE FROM SIDE')
+print('TO SIDE TO DODGE THOSE DEADLY ATACKS. FINALLY - AT LEVEL 5 - YOU WILL ENCOUNTER THE BOSS ENEMY. IT IS COMPLETELY UNBLOCKABLE SO PRIORITISE DEFLECTING OTHER ENEMIES TO GET AROUND IT')
+print('GOOD LUCK!')
+for i in range(maxObj):
+    objX.append(randint(0, 600))
+    objY.append(randint(-1000, -600))
+    objChoice = choice(objects)
+    obj.append(objChoice)
+    if(objChoice == "bubble" or objChoice == "pinkBubble"):
+        objSpeed.append(5)
+    elif(objChoice == "squirter" or objChoice == "boss"):
+        objSpeed.append(8)
+    elif(objChoice == "enemy"):
+        objSpeed.append(10)
+looping = True
+while looping:
+    for event in pygame.event.get():
+        mousex, mousey = pygame.mouse.get_pos()
+        if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+            looping = False
+        if event.type == pygame.QUIT:
+            pygame.display.quit()
+            pygame.quit()
+dead = False
+running = True
+while True:
+    while running:
+        screen.fill((0, 200, 210))
+        if (not(level == 100)):
+            soapY = soapY + soapSpeed
+        #main game design code
+        for event in pygame.event.get():
+            mousex, mousey = pygame.mouse.get_pos()
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                quacking = True
+                mixer.music.load('/home/pi/Desktop/ASSETS/duckQuack.mp3')
+                mixer.music.set_volume(50)
+                mixer.music.play()
+            else:
+                quacking = False
+        #sud movement code
+        if soapY < 0:
+            if -10 < soapY:
+                sudX = []
+                sudY = []
+                for i in range(maxObj):
+                    sudX.append(-200)
+                    sudY.append(randint(-100, 700))
+        else:
+            for i in range(len(sudY)):
+                sudY[i] = sudY[i] - 5
+                if sudY[i] < -200:
+                    sudY[i] = soapY
+                    sudX[i] = randint(soapX - 100, soapX + 100)
+                if 500>sudY[i]> 200 and (sudX[i] > mousex- 37 and sudX[i] < mousex+ 37):
+                    score = score + 2
+                    if randint(1, 2) == 2:
+                        sudY[i] = soapY
+                        sudX[i] = randint(soapX - 100, soapX + 100)
+                    else:
+                        sudY[i] = soapY
+                        sudX[i] = 800
+                screen.blit(pygame.transform.scale(sud, (75, 75)), (sudX[i]-38, sudY[i]))
+        #animation when quacking vs. not code
+        if quacking and quack == 45:
+            mixer.music.pause()
+            mixer.music.load('/home/pi/Desktop/ASSETS/duckBubbles.mp3')
+            mixer.music.set_volume(5)
+            mixer.music.play()
+        if not(quacking) and quack == 45:
+            mixer.music.stop()
+            mixer.music.load('/home/pi/Desktop/ASSETS/duckQuack.mp3')
+            mixer.music.set_volume(50)
+            mixer.music.unpause()
+        if not(quacking) and quack == 0:
+            mixer.music.stop()
+        if quacking:
+            size = randint(200, 250)
+            screen.blit(pygame.transform.scale(duckBubbles, (size, size)), (mousex-size/2, 410))
+            if quack < 50:
+                quack = quack + 5
+        if not(quacking) and quack > 0:
+            quack = quack -5
+        #level pass code
+        if(score/level >= 100 and level < 6):
+            level = level + 1
+            running = False
+            dead = False
+            wallCord = 400
+            wallSpeed = -9
+        #gen section
+        for i in range(len(objX)):
+            #general movement
+            objY[i] = objY[i] + objSpeed[i]
+            if(500>objY[i]> 200 and quacking and (objX[i] > mousex- 100 and objX[i] < mousex+ 100) and objSpeed[i] > 0):
+                if(not(obj[i] == "boss")):
+                    objSpeed[i] = objSpeed[i] * -1
+            if(objY[i] < -500 or objY[i] > 700):
+                objY[i] =randint(-600, -200)
+                objX[i] = randint(0, 600)
+                objChoice = choice(objects)
+                obj[i] = objChoice
+                if(objChoice == "bubble" or objChoice == "pinkBubble"):
+                    objSpeed[i] = 5
+                if(objChoice == "squirter" or objChoice == "boss"):
+                    objSpeed[i] = 8
+                if(objChoice == "enemy"):
+                    objSpeed[i] = 10
+                if (objSpeed[i] < 0):
+                    objSpeed[i] = objSpeed[i] * -1
+            #specific to each object
+            if(500>objY[i]> 250 and not(quacking) and (objX[i] > mousex- 100 and objX[i] < mousex+ 100)):
+                if(obj[i] == "bubble"):
+                    objY[i] = -200
+                    objX[i] = randint(0, 600)
+                    score = score + 1
+                elif(obj[i] == "pinkBubble"):
+                    objY[i] = -200
+                    objX[i] = randint(0, 600)
+                    score = score + 3
+                elif(obj[i] == "enemy" or objChoice == "squirter"):
+                    running = False
+                    dead = True
+                    wallCord = 400
+                    wallSpeed = -9
+            if(obj[i] == "boss" and objX[i] > mousex- 125 and objX[i] < mousex+ 125 and 500>objY[i]> 250):
+                running = False
+                dead = True
+                wallCord = 400
+                wallSpeed = -9
+            if(obj[i] == "bubble"):
+                screen.blit(pygame.transform.scale(bubble, (125, 125)), (objX[i]-63, objY[i]+25))
+            elif(obj[i] == "pinkBubble"):
+                screen.blit(pygame.transform.scale(pinkBubble, (150, 150)), (objX[i]-75, objY[i]+12))
+            elif(obj[i] == "enemy"):
+                screen.blit(pygame.transform.scale(enemy, (275, 275)), (objX[i]-137, objY[i]-100))
+            elif(obj[i] == "squirter"):
+                screen.blit(pygame.transform.scale(squirter, (275, 275)), (objX[i]-137, objY[i]-100))
+                if(100 < objY[i] < 300):
+                    jetX[i] = jetX[i] + xChange
+                    jetY[i] = jetY[i] + yChange
+                    if(sqrt((jetX[i]-mousex)**2 + (jetY[i]-450)**2) < 5):
+                        running = False
+                        dead = True
+                        wallCord = 400
+                        wallSpeed = -9
+                    if(jetY[i] > 600):
+                        jetX[i] = objX[i]-130
+                        jetY[i] = objY[i]+50
+                        xChange = ((mousex -jetX[i])/(450-jetY[i]))*25
+                        yChange = ((450-jetY[i])/abs(mousex -jetX[i]))*25
+                    pygame.draw.line(screen, (0, 0, 200), (round(jetX[i]), round(jetY[i])), (objX[i], objY[i]+50), 20)
+            elif(obj[i] == "boss"):
+                screen.blit(pygame.transform.scale(boss, (325, 325)), (objX[i]-163, objY[i]-100))
+        if(500>soapY> 200 and quacking and (soapX > mousex- 100 and soapX < mousex+ 100) and soapSpeed == 5):
+            soapSpeed = -5
+        if(500>soapY> 250 and not(quacking) and (soapX > mousex- 100 and soapX < mousex+ 100)):
+            running = False
+            dead = True
+            wallCord = 400
+            wallSpeed = -9
+        if(soapY < -2000 or soapY > 2000):
+            soapY = randint(-2000, -1000)
+            soapX = randint(0, 600)
+            soapSpeed = 5
+        #additional render section
+        screen.blit(pygame.transform.scale(soap, (200, 200)), (soapX-100, soapY-50))
+        screen.blit(pygame.transform.scale(body, (round(175-(quack/5)), round(175+(quack/4)))), (mousex-85+round(quack/10), 430- round(quack/8)))
+        screen.blit(pygame.transform.scale(wings, (175 -round(quack/6), 175 + round(quack/6))), (mousex-85+round(quack/12), 435+(quack/4)))
+        screen.blit(pygame.transform.scale(head, (125, 125)), (mousex-60, 380-quack))
+        #bubble wall
+        if (not(level == 100)):
+            textShade = pygame.Color(255, 255, 0)
+            text = font.render(str(level) + "/" +str(score), True, textShade)
+            textRect = text.get_rect()
+            textRect.center = (300, 75)
+            screen.blit(text, textRect)
+        if(wallCord <= 400):
+            wallSpeed = wallSpeed + 0.1
+            wallCord = wallCord +wallSpeed
+            screen.blit(leftWall, (0-wallCord, 0))
+            screen.blit(rightWall, (wallCord, 0))
+            screen.blit(border, (0-wallCord, 0))
+        if level == 100:
+            font = pygame.font.Font('freesansbold.ttf', 100)
+            textShade = pygame.Color(255, 255, 0)
+            text = font.render("YOU WON!!!", True, textShade)
+            textRect = text.get_rect()
+            textRect.center = (300, 275)
+            screen.blit(text, textRect)
+        pygame.display.update()
+    while(wallSpeed < 0):
+        if(round(wallCord) ==0):
+            obj = []
+            objX = []
+            objY = []
+            objSpeed = []
+            bubbleX = []
+            bubbleY = []
+            wallSpeed = 0
+            wallCord = 1
+            quack = 0
+            quacking = False
+            if (dead):
+                objects = ["bubble", "bubble", "bubble", "bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "pinkBubble"]
+            else:
+                if (level == 2):
+                    objects = ["bubble", "bubble", "bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "enemy", "pinkBubble"]
+                if (level == 3):
+                    objects = ["bubble", "bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "enemy", "squirter", "pinkBubble"]
+                if (level == 4):
+                    objects = ["bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "enemy", "squirter", "squirter", "pinkBubble"]
+                if (level == 5):
+                    objects = ["enemy", "enemy", "enemy", "enemy", "enemy", "enemy", "squirter", "squirter", "boss", "pinkBubble"]
+                if (level == 6):
+                    objects = ["pinkBubble"]
+                    level = 100
+            for i in range(maxObj):
+                objX.append(randint(0, 600))
+                objY.append(randint(-1000, -600))
+                objChoice = choice(objects)
+                obj.append(objChoice)
+                if(objChoice == "bubble" or objChoice == "pinkBubble"):
+                    objSpeed.append(5)
+                elif(objChoice == "squirter" or objChoice == "boss"):
+                    objSpeed.append(8)
+                elif(objChoice == "enemy"):
+                    objSpeed.append(10)
+            pygame.display.update()
+        wallSpeed = wallSpeed + 0.1
+        wallCord = wallCord +wallSpeed
+        screen.blit(leftWall, (0-wallCord, 0))
+        screen.blit(rightWall, (wallCord, 0))
+        screen.blit(border, (0-wallCord, 0))
+        pygame.display.update()
+    soapX = randint(0, 600)
+    soapY = randint(-600, -200)
+    if dead:
+        level = 1
+        textShade = pygame.Color(200, 0, 0)
+        text = font.render("GAME OVER", True, textShade)
+        textRect = text.get_rect()
+        textRect.center = (300, 250)
+        screen.blit(text, textRect)
+        textShade = pygame.Color(200, 0, 0)
+        text = font.render("SCORE: " + str(score), True, textShade)
+        textRect = text.get_rect()
+        textRect.center = (300, 350)
+        screen.blit(text, textRect)
+        pygame.display.update()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.display.quit()
+                pygame.quit()
+            if event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.KEYDOWN:
+                objects = ["bubble", "bubble", "bubble", "bubble", "enemy", "enemy", "enemy", "enemy", "enemy", "pinkBubble"]
+                score = 0
+                dead = False
+                running = True
+    else:
+            running = True
